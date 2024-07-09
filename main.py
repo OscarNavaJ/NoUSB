@@ -1,10 +1,8 @@
-"""
-author: Oscar Nava
+from time import sleep
+from middleware.modules.no_usb_metadata import NoUsbDevice
 
-"""
-
-from device.device_hid import BlenderMK1
-
-blender_mk1 = BlenderMK1()
-device_mk1 = blender_mk1.get_hid_device()
-device_mk1.report_transaction((1,2,2))
+if __name__ == '__main__':
+    ometeo_no_usb = NoUsbDevice()
+    ometeo_no_usb.vcc_on()
+    sleep(5)
+    ometeo_no_usb.vcc_off()
