@@ -12,7 +12,7 @@ class NoUsbDetectHidDevice:
     def _find_device(self) -> dict:
         device_meta = None
         for hid_device in hid.enumerate():
-            if hid_device['manufacturer_string'] == 'NO USB Electronics' and hid_device['product_string'] == 'NO USB':
+            if hid_device['manufacturer_string'] == 'NO USB' and hid_device['product_string'] == 'NO USB':
                 device_meta = hid_device
                 
         try:

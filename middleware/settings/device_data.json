@@ -1,9 +1,23 @@
 {
-    "7108": {
+    "66": {
+        "multi_port": true,
+        "ports_number": 3,
+        "start_port": 2,
+        "major_command": 10,
+        "description": "3 Port Hub -> A device. Serial data communication via USB C."
+    },
+    "67": {
         "multi_port": false, 
         "ports_number": 1, 
         "start_port": 1, 
         "major_command": 10, 
         "description": "NO USB C -> A device. Serial data communication via USB C."
+    },
+    "68": {
+        "multi_port": false,
+        "ports_number": 1,
+        "start_port": 1,
+        "major_command": 10,
+        "description": "Host Switch -> Single A Port device. Serial data communication via USB C."
     }
 }
