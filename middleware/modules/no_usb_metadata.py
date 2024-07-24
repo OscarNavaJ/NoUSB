@@ -43,37 +43,50 @@ class NoUsbDevice(NoUsbDetectHidDevice):
     def get_micro_id(self, port=None):
         if not self.device_meta['multi_port']:
             port = 1
-        self._report_transaction((self.info_cmd,))
+        response = self._report_transaction((self.info_cmd,))
+        return response
     def vcc_on(self, port=None):
         if not self.device_meta['multi_port']:
             port = 1
             
-        self._report_transaction((self.major_cmd, port, 1))
+        response = self._report_transaction((self.major_cmd, port, 1))
+        return response
         
     def vcc_off(self, port=None):
         if not self.device_meta['multi_port']:
             port = 1
             
-        self._report_transaction((self.major_cmd, port, 0))
+        response = self._report_transaction((self.major_cmd, port, 0))
+        return response
 
     def usb_connect(self, port=None):
         if not self.device_meta['multi_port']:
             port = 1
-        self._report_transaction((self.major_cmd, port, 9))
+        response = self._report_transaction((self.major_cmd, port, 9))
+        return response
     def usb_disconnect(self, port=None):
         if not self.device_meta['multi_port']:
             port = 1
-        self._report_transaction((self.major_cmd, port, 10))
+        response = self._report_transaction((self.major_cmd, port, 10))
+        return response
+    def connection_status(self, port=None):
+        if not self.device_meta['multi_port']:
+            port = 1
+        response = self._report_transaction((self.major_cmd, port, 11))
+        return response
 
     def micro_reset(self):
-        self._report_transaction((self.major_cmd, 1, 99))
+        response = self._report_transaction((self.major_cmd, 1, 99))
+        return response
     def _report_transaction(self, write_data : tuple):
         self.device.write([1,*write_data] + [0] * 60)
         sleep(0.05)
+        response = None
         while True:
-            d = self.device.read(64)
-            if d:
-                print(d)
+            response = self.device.read(64)
+            if response:
+                print(response)
                 break
             else:
                 break
+        return response
