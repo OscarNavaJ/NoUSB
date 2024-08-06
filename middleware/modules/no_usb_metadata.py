@@ -4,6 +4,11 @@ from time import sleep
 from middleware.settings.config import DEVICE_DATA_JSON
 from abc import ABC, abstractmethod
 from typing import List
+import logging
+
+logger = logging.getLogger('HIDLogger')
+logging.basicConfig(level=logging.DEBUG)
+logger.setLevel(logging.DEBUG)
 
 class NoUSBDeviceFoundError(Exception):
     def __init__(self, message):
@@ -14,7 +19,7 @@ class NoUsbDetectHidDevice(ABC):
     def __init__(self,product_id = None, serial_pn = None) -> None:
         self.found = False
         self.device = None
-        self._find_device(product_id = product_id, serial_pn = serial_pn)
+        self.device_meta = self._find_device(product_id = product_id, serial_pn = serial_pn)
         if not self.found:
             raise NoUSBDeviceFoundError("No² USB Found")
 
@@ -30,7 +35,7 @@ class NoUsbDetectHidDevice(ABC):
             self.device = hid.device()
             self.device_meta = device
             self.device_type = self.device_meta['product_string']
-            self.device.open(device['vendor_id'], device['product_id'])
+            self.device.open_path(device["path"])
             self.device.set_nonblocking(0)
 
             if product_id and product_id != self.device_meta['product_string']:
@@ -40,12 +45,13 @@ class NoUsbDetectHidDevice(ABC):
                 return False
 
             print('Device found and running !\n')
-            print(f"Device Information-> \nName: {device['product_string']} \nProduct ID: {device['product_id']} \nVendor ID: {device['vendor_id']}")
+            logger.debug(f"Device Information-> \nName: {device['product_string']} \nProduct ID: {device['product_id']} \nVendor ID: {device['vendor_id']}")
+            logger.debug(f"{device["path"]}")
         except (IOError, TypeError) as ex:
-            print('Please verify your NO USB device connection !')
+            print('Please verify your NO USB device connection !',ex)
             raise NoUSBDeviceFoundError("No² USB Found")
         self.found = True
-        return True
+        return device
 
     def get_micro_id(self, port=None):
         id_bytes_list = self._report_transaction((1,))
@@ -59,7 +65,7 @@ class NoUsbDetectHidDevice(ABC):
         while True:
             response = self.device.read(64)
             if response:
-                print(response)
+                logger.debug(response)
                 break
             else:
                 break
@@ -67,17 +73,15 @@ class NoUsbDetectHidDevice(ABC):
 
     def _find_device(self, product_id = None, serial_pn = None) -> dict:
 
-        for hid_device in list(filter(lambda x:self.device_filter(x,product_id=product_id,serial_pn=serial_pn),hid.enumerate())):
-            # if hid_device['manufacturer_string'] == 'NO USB' and hid_device['product_string'] == 'NO USB':
-            device_meta = hid_device
-
-            _vendor_id_str = str(device_meta['product_id'])
-            with open(DEVICE_DATA_JSON, 'r+') as json_file:
-                json_data = json.load(json_file)
-                if _vendor_id_str in json_data:
-                    device_meta.update(json_data[_vendor_id_str])
-                    #'800006940800'
-            return device_meta
+        for hid_device in hid.enumerate():
+            if self.device_filter(hid_device,product_id=product_id,serial_pn=serial_pn):
+                device_meta = hid_device
+                _vendor_id_str = str(device_meta['product_id'])
+                with open(DEVICE_DATA_JSON, 'r+') as json_file:
+                    json_data = json.load(json_file)
+                    if _vendor_id_str in json_data:
+                        device_meta.update(json_data[_vendor_id_str])
+                return device_meta
 
 
 class OmeteoNoUsbDevice(NoUsbDetectHidDevice):
